@@ -20,21 +20,34 @@ export async function loadImage(url: string | Uint8Array) {
 
   if (url instanceof Uint8Array) {
     data = url;
-  } else if (url.startsWith("http")) {
-    data = await fetch(url).then((e) => e.arrayBuffer()).then((e) =>
-      new Uint8Array(e)
-    );
-  } else if (url.startsWith("data")) {
-    data = dataURLtoFile(url);
+  } else if (typeof url === "string") {  // Eğer url bir string ise işlem yap
+    if (url.startsWith("http")) {
+      data = await fetch(url)
+        .then((response) => response.arrayBuffer())
+        .then((buffer) => new Uint8Array(buffer));
+    } else if (url.startsWith("data")) {
+      data = dataURLtoFile(url);
+    } else {
+      try {
+        data = await Deno.readFile(url);
+      } catch (error) {
+        throw new Error(`File read error: ${error.message}`);
+      }
+    }
   } else {
-    data = await Deno.readFile(url);
+    throw new TypeError(`Invalid URL type: ${typeof url}`);
+  }
+
+  if (!data) {
+    throw new Error("Failed to load image data.");
   }
 
   const img = canvas.MakeImageFromEncoded(data);
-  if (!img) throw new Error("Invalid image data");
+  if (!img) throw new Error("Invalid image data.");
 
   return img;
 }
+
 
 export const createCanvas = (width: number, height: number) => {
   return canvas.MakeCanvas(width, height);
