@@ -17,6 +17,7 @@ export function dataURLtoFile(dataurl: string) {
 
 export async function loadImage(url: string | Uint8Array) {
   let data;
+  console.log("loadImage param:", typeof url, url);
 
   if (url instanceof Uint8Array) {
     data = url;
